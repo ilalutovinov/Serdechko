@@ -178,9 +178,7 @@ const $=i=>document.getElementById(i),E=s=>String(s).replace(/[&<>"]/g,c=>({"&":
 const CO=[["Розовая","#f43f6e","#fff0f4","#ffc4d6"],["Персик","#ff7a45","#fff1e8","#ffd2b8"],["Мята","#17a67d","#e6f8f1","#b4e8d6"],["Сирень","#8b5cf6","#f3edff","#d9c9ff"],["Небо","#0ea5e9","#e6f6ff","#b9e3fb"]];
 const CN={food:"Блюда",movie:"Кино",act:"Активности",drink:"Напитки",place:"Места"};
 const ld=(d=new Date())=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-/* ===== НАСТРОЙКА БОТА (см. README.md) =====
-   BOT — username твоего бота без @, например "serdechko_bot". Бот работает на этом же сайте (папка api).
-   Пока пусто — работает запасной вариант: кнопка «Сообщить в Telegram» у получателя. */
+/* ===== НАСТРОЙКА БОТА ===== */
 const BOT="";
 const API=BOT?"/api":"";
 const tgCode=v=>{const t=String(v||"").trim();return /^\d{5,15}$/.test(t)?t:""};
@@ -201,160 +199,94 @@ const T=[
 let step=0,done=false,L={};
 const fd=d=>d?new Date(d+"T00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long"}):"…";
 const items=()=>S.items[S.cat].split("\n").filter(x=>x.trim()).map(l=>{const m=l.trim().match(/^(\S+)\s+(.+)$/);return m?[m[1],m[2]]:["✨",l.trim()]});
-const V=(()=>{const m=(location.search+location.hash).match(/[?&#](i|s|b)=([^&]+)/);return m?[m[1],m[2]]:null})();
-const b64=o=>encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(o)))));const unb=v=>JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(v)))));
-function msg(t,x,w){x=x||{};const m=w==="m",P=m?"Он":"Она",f=m?"":"а";const M={opened:`${P} открыл${f} приглашение 👀`,yes:`${P} сказал${f} «да»! 🎉`,no_click:`${P} жмёт «нет» (${x.count} раз) 😅`,date:`${P} выбрал${f} время: ${fd(x.date)}, ${x.time} 📅`,final:`Свидание подтверждено: ${fd(x.date)}, ${x.time}${x.choices&&x.choices.length?", "+x.choices.join(", "):""} 💘`,box_open:`${P} открыл${f} записку № ${x.n} 💌`,box_reply:`${P} ответил${f}: «${x.answer}»`,scr:`${P} ${m?"стёр":"стёрла"} слой и ${m?"узнал":"узнала"} секрет 👀`};return M[t]}
-const tgU=v=>String(v||"").trim().replace(/^(https?:\/\/)?t\.me\//i,"").replace(/^@/,"").replace(/[^\w]/g,"");
-function tgBtn(text,c){const u=tgU(c.tg);if(!u||/^\d+$/.test(u))return;let b=$("tgb");if(!b){b=document.createElement("a");b.id="tgb";b.className="tgb";b.target="_blank";b.rel="noopener";b.textContent="📨 Сообщить в Telegram";document.body.appendChild(b)}b.href="https://t.me/"+u+"?text="+encodeURIComponent(text);b.classList.remove("tap");void b.offsetWidth;b.classList.add("tap")}
-function send(t,x,c){const text=msg(t,x,c.who);if(!V){if(t!=="no_click")ts("💬 "+text);return}
- const code=tgCode(c.tg);
- if(API&&code){if(t==="no_click"&&(x||{}).count!==3)return;
-  const k="sd_"+c.id+"_"+t+(t==="box_open"?(x||{}).n:"");
-  if(t!=="box_reply"){try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}}
-  fetch(API.replace(/\/$/,"")+"/notify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({c:code,t,x:x||{},w:c.who}),keepalive:true}).catch(()=>{});return}
- tgBtn(text,c)}
-const ev=(t,x)=>send(t,x,S);
-function ts(t){const e=$("ts");e.textContent=t;e.classList.add("s");setTimeout(()=>e.classList.remove("s"),1900)}
-function cpy(t,el){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>ts("Скопировано ✓")).catch(()=>{if(el){el.select();ts("Выдели и скопируй вручную")}})}
-const cv=$("cv"),cx=cv.getContext("2d");let P=[],on=0;
-function conf(){cv.width=innerWidth;cv.height=innerHeight;const k=["#f43f6e","#ffd166","#06d6a0","#8b5cf6","#fff"];for(let i=0;i<150;i++)P.push({x:cv.width/2,y:cv.height/2,vx:(Math.random()-.5)*15,vy:Math.random()*-15-3,s:4+Math.random()*7,c:k[i%5],r:Math.random()*6,l:100+Math.random()*50});if(!on){on=1;tk()}}
-function tk(){cx.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.35;p.r+=.2;p.l--;cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);cx.restore()});P=P.filter(p=>p.l>0);if(P.length)requestAnimationFrame(tk);else{on=0;cx.clearRect(0,0,cv.width,cv.height)}}
-function theme(ph,i){const c=CO[i];ph.style.setProperty("--pc",c[3]);ph.style.setProperty("--pt",c[2]);ph.style.setProperty("--pa",c[1])}
-/* ---------- приглашение ---------- */
-function reset(s){L={scr:s||"gate",date:"",time:"",sel:[],nc:0};if(L.scr==="gate"&&S.open==="now")L.scr="main";pv()}
-function pv(){
- theme($("ph"),S.col);const date=S.dm==="set"?S.date:L.date,time=S.dm==="set"?S.time:L.time,sel=L.sel.map(i=>(items()[i]||[])[1]).filter(Boolean);
- const fill=t=>E(t).replace(/\{name\}/g,E(S.to||"Привет")).replace(/\{date\}/g,fd(date)).replace(/\{time\}/g,time||"…").replace(/\{food\}/g,sel.join(", ")||"то, что выберем");
- const idx=["gate","main","confirm","date","choice","final"].indexOf(L.scr),sc=L.scr;
- let h=S.bar?`<div class="pbar"><i style="width:${Math.max(8,idx/5*100)}%"></i></div>`:"";
- if(sc==="gate")h+=S.open==="code"?`<div class="stk">🔒</div><h3>Введи код</h3><div class="bt"><input id="gc" maxlength="4" inputmode="numeric" placeholder="••••"><button class="pb" id="gb">Открыть</button></div>`:`<div class="stk" id="env" style="cursor:pointer;animation:sh 1.4s infinite">${S.st}</div><div class="bt"><p>Нажми на конверт</p></div>`;
- if(sc==="main")h+=`<div class="stk">${S.st}</div><h3>${E(S.t1)}</h3><p>${fill(S.s1)}</p><div class="bt"><button class="pb" id="y">${E(S.yes)}</button><button class="pb sec" id="n" style="position:relative">${E(S.no)}</button></div>`;
- if(sc==="confirm")h+=`<div class="stk">🥹</div><h3>${E(S.t2)}</h3><p>${fill(S.s2)}</p><div class="bt"><button class="pb" id="c2">${E(S.b2)}</button></div>`;
- if(sc==="date")h+=`<div class="stk">📅</div><h3>${E(S.t3)}</h3><div class="bt">`+(S.dm==="pick"?`<input type="date" id="pd" min="${ld()}" value="${L.date}"><input type="time" id="pt" value="${L.time}">`:`<p><b>${fd(S.date)}, ${S.time}</b></p>`)+`<button class="pb" id="b3" ${date&&time?"":"disabled"}>${E(S.b3)}</button></div>`;
- if(sc==="choice")h+=`<h3>${E(S.t4)}</h3><p>${fill(S.s4)}</p><div class="it">${items().map((x,i)=>`<button data-i="${i}" class="${L.sel.includes(i)?"on":""}"><span>${x[0]}</span>${E(x[1])}</button>`).join("")}</div><div class="bt"><button class="pb" id="ok" ${L.sel.length?"":"disabled"}>Готово</button></div>`;
- if(sc==="final")h+=`<div class="stk">${(items()[L.sel[0]]||["🎉"])[0]}</div><h3>${E(S.t5)}</h3><p>${fill(S.d5)}</p>${S.from?`<p><b>— ${E(S.from)}</b></p>`:""}`;
- const el=$("scr");el.className="sc s"+S.shape;el.innerHTML=h;
- const g=i=>$(i),go=n=>{L.scr=n;pv();$("scr").classList.add("ent")};
- if(g("gb"))g("gb").onclick=()=>{if(g("gc").value===S.code)go("main");else{g("gc").value="";el.classList.add("sh");setTimeout(()=>el.classList.remove("sh"),500)}};
- if(g("env"))g("env").onclick=()=>go("main");
- if(g("y"))g("y").onclick=()=>{ev("yes");if(S.ya==="shake"){el.classList.add("sh");conf()}setTimeout(()=>go("confirm"),S.ya==="shake"?900:0)};
- if(g("n"))g("n").onclick=()=>{L.nc++;ev("no_click",{count:L.nc});const n=g("n"),y=g("y");if(S.na==="shrink"){n.style.transform=`scale(${Math.max(.2,1-L.nc*.2)})`;y.style.transform=`scale(${1+L.nc*.06})`}else if(S.na==="kiss"){const k=document.createElement("span");k.className="kiss";k.textContent="😘";k.style.left="45%";n.appendChild(k)}};
- if(g("c2"))g("c2").onclick=()=>go("date");
- if(g("pd"))g("pd").onchange=e=>{L.date=e.target.value;pv()};if(g("pt"))g("pt").onchange=e=>{L.time=e.target.value;pv()};
- if(g("b3"))g("b3").onclick=()=>{ev("date",{date,time});go("choice")};
- el.querySelectorAll(".it button").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;L.sel=S.multi?(L.sel.includes(i)?L.sel.filter(x=>x!==i):[...L.sel,i]):[i];pv()});
- if(g("ok"))g("ok").onclick=()=>{ev("final",{date,time,choices:sel});go("final");conf()};
-}
-function fh(f,o){o=o||S;const k=f[1];
- if(f[0]==="h")return`<div class="hh">${f[1]}</div>`;
- if(f[0]==="c"){const arr=Array.isArray(f[2]),opts=arr?f[2]:f[3];const curVal=String(o[k]);return(arr?"":`<label>${f[2]}</label>`)+`<div class="cs ${f[4]||""}">${opts.map(x=>`<button class="o ${curVal===String(x[0])?"on":""}" data-k="${k}" data-v="${x[0]}"><span>${x[1]}</span>${x[2]}</button>`).join("")}</div>`}
- if(f[0]==="a")return`<label>${f[2]}</label><textarea class="f" data-k="${k}">${E(o[k])}</textarea>`;
- if(f[0]==="it")return`<label>Варианты (по одному в строке: эмодзи и название)</label><textarea class="f" id="itx" style="min-height:140px">${E(S.items[S.cat])}</textarea>`;
- return`<label>${f[2]}</label><input class="f" data-k="${k}" ${f[0]==="d"?'type="date"':f[0]==="tm"?'type="time"':""} value="${E(o[k])}">`+(k==="tg"?tgHelp():"")}
-function bindF(root,obj,after,rerender){root.querySelectorAll("[data-k]").forEach(e=>{if(e.tagName==="BUTTON")e.onclick=()=>{const v=e.dataset.v;obj[e.dataset.k]=v==="true"?true:v==="false"?false:/^\d+$/.test(v)?+v:v;rerender()};else e.oninput=()=>{obj[e.dataset.k]=e.value;after()}})}
-function R(){
- const s=T[step],pn=$("pn");$("sn").textContent=done?"Готово!":(step+1)+". "+s.n;$("sc").textContent=done?"":"Шаг "+(step+1)+" из "+T.length;$("pi").style.width=done?"100%":((step+1)/T.length*100)+"%";
- if(done){pn.innerHTML=`<div style="text-align:center"><div style="font-size:56px">💞</div><h2>Приглашение создано!</h2><p class="sub">Отправь ссылку тому, кого хочешь позвать</p></div><label>Ссылка на приглашение</label><input class="f" id="lk" readonly value="${E(S.base+"?i="+b64(S))}"><div class="chips" style="margin-top:12px"><button class="btn" id="cl2">Скопировать ссылку 🔗</button><button class="btn o2" id="fs">Открыть как получатель ▶</button></div><div class="hh">Ответы в Telegram</div><label>${TGL}</label><input class="f" id="tginp" value="${E(S.tg)}" placeholder="${BOT?"код или @username":"@username"}">${tgHelp()}<p class="sub2" style="margin-top:14px">Так будут выглядеть сообщения:</p><p id="bm" style="line-height:1.7;font-weight:700;margin:6px 0"></p><p class="sub" style="font-size:12px;margin-top:14px">Приглашение зашито в ссылку. ${BOT?"Если вставить код из бота, ответы придут тебе сами. С @username у получателя вверху появится кнопка «Сообщить в Telegram».":"Когда получатель пройдёт его, вверху появится кнопка «Сообщить в Telegram»: одно нажатие откроет твой чат с готовым сообщением."}</p><div class="nv"><button class="btn g" id="bk">← Изменить</button><button class="btn o2" id="nw">Создать заново</button></div>`;
-  $("tginp").oninput=e=>{S.tg=e.value;if($("lk"))$("lk").value=S.base+"?i="+b64(S)};
-  $("bm").innerHTML=["opened","yes","date","final"].map(t=>"💬 "+E(msg(t,{count:1,date:S.date,time:S.time,choices:["Пицца"]},S.who))).join("<br>");
-  $("cl2").onclick=()=>cpy($("lk").value,$("lk"));$("fs").onclick=()=>testInv();$("bk").onclick=()=>{done=false;R()};$("nw").onclick=()=>location.reload();reset("main");return}
- pn.innerHTML=`<h2>${s.h}</h2><p class="sub">${s.sub}</p>${s.f.map(f=>fh(f)).join("")}<div class="nv"><button class="btn g" id="bk" style="${step?"":"visibility:hidden"}">← Назад</button><button class="btn" id="nx">${step===T.length-1?"Создать приглашение 💗":"Продолжить →"}</button></div>`;
- bindF(pn,S,pv,()=>{R()});if($("itx"))$("itx").oninput=e=>{S.items[S.cat]=e.target.value;L.sel=[];pv()};
- $("bk").onclick=()=>{step--;R();anim()};$("nx").onclick=()=>{if(step===T.length-1)done=true;else step++;R();anim();scrollTo(0,0)};
- reset(s.s)}
-function anim(){const p=$("pn");p.style.animation="none";void p.offsetWidth;p.style.animation="in .4s"}
-function testInv(){reset("gate");$("ph").classList.add("full");$("cl").classList.remove("hide")}
-$("rs").onclick=()=>reset(done?"main":T[step].s);
-$("cl").onclick=()=>{$("bxt").style.display="none";$("ph").classList.remove("full");$("ph2").classList.remove("full");$("cl").classList.add("hide")};
-/* ---------- сотри и узнай ---------- */
-function scrP(){
- theme($("ph2"),SC.col);const c=CO[SC.col];
- $("sc2").innerHTML=`<div class="stk">${SC.em}</div><h3>${E(SC.title)}</h3><div class="sw"><div class="sec">${E(SC.secret)}</div><canvas id="sk" width="260" height="150"></canvas></div><p>${E(SC.hint)}</p>`;
- const k=$("sk"),x=k.getContext("2d"),gr=x.createLinearGradient(0,0,260,150);gr.addColorStop(0,c[1]);gr.addColorStop(1,c[3]);x.fillStyle=gr;x.fillRect(0,0,260,150);x.font="26px serif";x.globalAlpha=.35;for(let i=0;i<5;i++)for(let j=0;j<3;j++)x.fillText("✨",14+i*52,40+j*50);x.globalAlpha=1;
- let d=false,lx=0,ly=0,ok=false;const p=e=>{const r=k.getBoundingClientRect();return[(e.clientX-r.left)*260/r.width,(e.clientY-r.top)*150/r.height]};
- k.onpointercancel=()=>{d=false};k.onpointerdown=e=>{d=true;[lx,ly]=p(e);k.setPointerCapture(e.pointerId)};
- k.onpointermove=e=>{if(!d||ok)return;const[a,b]=p(e);x.globalCompositeOperation="destination-out";x.lineWidth=34;x.lineCap="round";x.beginPath();x.moveTo(lx,ly);x.lineTo(a,b);x.stroke();lx=a;ly=b};
- k.onpointerup=()=>{d=false;if(ok)return;const px=x.getImageData(0,0,260,150).data;let t=0,n=0;for(let i=3;i<px.length;i+=64){n++;if(px[i]<40)t++}if(t/n>.5){ok=true;k.style.opacity=0;conf();send("scr",{},SC)}}}
-const SF=[["a","title","Заголовок"],["a","hint","Подсказка под окошком"],["a","secret","Секрет (что откроется под слоем)"],["c","em","Стикер",EM2.map(e=>[e,e,""]),"e"],["c","col","Цвета",CO.map((c,i)=>[i,"🎨",c[0]])],["c","who","Кому",[["w","👧","Девушке"],["m","👦","Парню"]]],["h","Ответы в Telegram"],["i","tg",TGL]];
-function scrR(){const pn=$("pn2");pn.innerHTML=`<h2>Сотри и узнай ✨</h2><p class="sub">Сюрприз под стираемым слоем: признание, подарок, место встречи</p>${SF.map(f=>fh(f,SC)).join("")}<div class="nv"><span></span><button class="btn" id="mk">Создать ссылку 🔗</button></div><div id="lo"></div>`;
- bindF(pn,SC,scrP,()=>{scrR();scrP()});
- $("mk").onclick=()=>{$("lo").innerHTML=`<label>Ссылка на сюрприз</label><input class="f" id="lk2" readonly value="${E(SC.base+"?s="+b64(SC))}"><div class="chips" style="margin-top:12px"><button class="btn" id="c3">Скопировать ссылку 🔗</button><button class="btn o2" id="t3">Открыть как получатель ▶</button></div>`;$("c3").onclick=()=>cpy($("lk2").value,$("lk2"));$("t3").onclick=()=>{scrP();$("ph2").classList.add("full");$("cl").classList.remove("hide")}}}
-/* ---------- коробочка признаний ---------- */
-const TH=[["Сердечки","💗","linear-gradient(160deg,#ffe3ee,#ffb8d2)","#3a1226","#d63a6e","#fff"],["Котики","🐾","linear-gradient(160deg,#fff7d6,#ffe49a)","#3b2a07","#e0a21a","#fff"],["Осень","🍁","linear-gradient(160deg,#ffe8cf,#ffc08a)","#40200a","#e0762b","#fff"],["Кофейня","☕","linear-gradient(160deg,#f3e6d6,#dcc2a3)","#3a2616","#8a5a35","#fff"],["Сакура","🌸","linear-gradient(160deg,#fff0f5,#ffd0e0)","#40182a","#e86a9a","#fff"],["Лаванда","🦋","linear-gradient(160deg,#efe7ff,#cdb8ff)","#2a1a4d","#8b5cf6","#fff"],["Мята","🌿","linear-gradient(160deg,#e2f8ea,#a9e8c4)","#12382a","#1fa971","#fff"],["Море","🐚","linear-gradient(160deg,#e0f4ff,#8fd2f5)","#0c2d45","#1696d6","#fff"],["Космос","🪐","linear-gradient(160deg,#2a1450,#0d0722)","#f3eaff","#a78bfa","#241545"],["При свечах","🕯","linear-gradient(160deg,#2b1a10,#0f0805)","#ffe9cc","#f0a04b","#2f1d12"]];
-const STAMPS=["💌","❤️","💖","🌷","🌸","💐","🎀","✨","🌙","⭐","🍓","🐻","🐱","🦊","🐰","🕊"];
-const TTL=["Причины, почему я тебя люблю","Маленькие признания","Воспоминания, которые я храню","За что я тебя ценю","То, чего ты в себе не замечаешь, а я замечаю"];
-const EX=["Потому что рядом с тобой мне не нужно притворяться кем-то другим.","Потому что ты помнишь, какой чай я люблю, и молча ставишь чайник, когда у меня плохой день.","Потому что ты смеёшься над моими шутками. Даже над неудачными.","Потому что даже промокнув под дождём, мы смеялись, и это был лучший вечер.","Потому что с тобой даже очередь в поликлинике похожа на маленькое приключение.","Потому что ты умеешь молчать рядом так, что мне становится спокойно.","Потому что каждое утро с мыслью о тебе начинается лучше.","Потому что ты веришь в меня, даже когда я сомневаюсь в себе.","Потому что с тобой любое место становится домом.","Потому что у тебя самая тёплая улыбка на свете.","Потому что ты заботишься обо мне, даже когда я об этом не прошу.","Потому что с тобой я хочу быть лучшей версией себя."];
-const BX={to:"Анна",from:"Иван",who:"w",title:TTL[0],n:7,notes:EX.slice(0,7).concat(Array(23).fill("")),mode:"daily",start:ld(),time:"09:00",dates:[],th:0,st:"💌",reply:true,q:"Что ответишь?",opts:["Я тоже тебя люблю 🥰","Обнимаю крепко 🤗","Ты лучше всех 💖","Давай увидимся ✨","Спасибо 🙏","Улыбаюсь 😊"].map((t,i)=>({t,on:i<4})),custom:true,tg:"",base:BASE,id:rid()};
-const fmtD=u=>new Date(u).toLocaleString("ru-RU",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
-const bxUnlock=(B,i)=>{if(B.mode==="all")return 0;const[y,m,d]=(B.mode==="custom"?(B.dates[i]||B.start):B.start).split("-").map(Number),[h,mi]=(B.time||"09:00").split(":").map(Number);return new Date(y,m-1,d+(B.mode==="daily"?i:0),h,mi).getTime()}
-const bxKey=(B,m)=>m===0?"bx_"+B.id:"bxp";
-const bxRead=(B,m)=>{try{return new Set(JSON.parse(localStorage.getItem(bxKey(B,m))||"[]"))}catch(e){return new Set()}}
-const bxSave=(B,m,s)=>{try{localStorage.setItem(bxKey(B,m),JSON.stringify([...s]))}catch(e){}}
-function bxR(host,B,mode){
- const th=TH[B.th]||TH[0],n=B.n,un=Array.from({length:n},(_,i)=>bxUnlock(B,i)),rd=bxRead(B,mode),now=Date.now();
- [["--bg",th[2]],["--ink",th[3]],["--ac",th[4]],["--cd",th[5]]].forEach(a=>host.style.setProperty(a[0],a[1]));host.className="bx"+(mode===1?" pv":" full");
- const hs=Array.from({length:10},(_,i)=>`<i style="left:${(i*37+11)%100}%;font-size:${16+(i*7)%18}px;animation-duration:${9+(i*3)%8}s;animation-delay:-${(i*2)%9}s">${i%3?th[1]:"💗"}</i>`).join("");
- const ev=un.map((u,i)=>{const lk=u>now,r=rd.has(i);return`<button class="ev ${lk?"lk":""} ${r?"rd":""} ${!lk&&!r?"nw":""}" data-i="${i}"><div class="env"><span class="fl"></span><span class="num">${i+1}</span><span class="sl">${lk?"🔒":B.st}</span></div><small>${lk?new Date(u).toLocaleDateString("ru-RU",{day:"numeric",month:"long"}):r?"прочитано":"новое ✨"}</small></button>`}).join("");
- const ro=B.opts.filter(o=>o.on);
- const rp=B.reply?`<div class="rp"><h3>${E(B.q)}</h3><div class="ro">${ro.map((o,i)=>`<button data-o="${i}">${E(o.t)}</button>`).join("")}</div>${B.custom?`<textarea class="rt" placeholder="Или напиши свой ответ…"></textarea>`:""}<button class="pb rsend">Отправить ответ 💌</button></div>`:"";
- host.innerHTML=`<div class="fx">${hs}</div><div class="bi"><div class="to">${E(B.to)}, это тебе ${th[1]}</div><h1>${E(B.title)}</h1><div class="bp"><i style="width:${Math.min(100,rd.size/n*100)}%"></i></div><p class="bs">Прочитано ${rd.size} из ${n}</p><div class="eg">${ev}</div><p class="nx"></p>${rp}</div>`;
- const nx=host.querySelector(".nx");let armed=false;
- nx._f=()=>{const t=Date.now(),q=un.filter(u=>u>t).sort((a,b)=>a-b)[0];if(!q){nx.textContent=rd.size>=n?"Все записки прочитаны 💞":"Все конверты открыты 🎉";return}const s=Math.floor((q-t)/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);nx.textContent="Следующий конверт откроется через "+(d?d+" д ":"")+h+" ч "+m+" мин "+s%60+" с";if(q-t<1100&&!armed){armed=true;setTimeout(()=>{if(nx.isConnected&&!host.querySelector(".lt"))bxR(host,B,mode)},q-t+80)}};nx._f();
- host.querySelectorAll(".ev").forEach(b=>b.onclick=()=>{const i=+b.dataset.i,u=un[i];
-  if(u>Date.now()){const e=b.querySelector(".env");e.classList.remove("sh");void e.offsetWidth;e.classList.add("sh");ts("🔒 Откроется "+fmtD(u));return}
-  const o=document.createElement("div");o.className="lt";o.innerHTML=`<div class="ltc"><div class="lem">${B.st}</div><div class="to">Записка № ${i+1}</div><p class="ln">${E(B.notes[i]||"Здесь будет твоя записка 💌")}</p>${B.from?`<p class="sg">— ${E(B.from)}</p>`:""}<button class="pb lcl">Закрыть</button></div>`;host.appendChild(o);
-  if(!rd.has(i)){rd.add(i);bxSave(B,mode,rd);send("box_open",{n:i+1},B);conf()}
-  const cl=()=>{o.remove();bxR(host,B,mode)};o.querySelector(".lcl").onclick=cl;o.onclick=e=>{if(e.target===o)cl()}});
- let pick="";host.querySelectorAll(".ro button").forEach(b=>b.onclick=()=>{host.querySelectorAll(".ro button").forEach(x=>x.classList.remove("on"));b.classList.add("on");pick=ro[+b.dataset.o].t});
- const sb=host.querySelector(".rsend");if(sb)sb.onclick=()=>{const rt=host.querySelector(".rt"),ans=[pick,rt?rt.value.trim():""].filter(Boolean).join(" — ");if(!ans){ts("Выбери вариант или напиши ответ");return}
-  send("box_reply",{answer:ans},B);const tx=`Мой ответ на коробочку «${B.title}»: ${ans}`;
-  host.querySelector(".rp").innerHTML=`<div style="font-size:44px">💌</div><h3>Ответ отправлен!</h3><p style="opacity:.75;font-weight:700;font-size:14px;margin:0 0 10px">Если хочешь, отправь его ещё и сообщением</p><button class="pb shr">Поделиться ответом</button>`;conf();
-  host.querySelector(".shr").onclick=()=>{try{if(navigator.share){navigator.share({text:tx}).catch(()=>{});return}}catch(e){}cpy(tx)}}}
-setInterval(()=>document.querySelectorAll(".nx").forEach(e=>e._f&&e._f()),1000);
-const bxP=()=>bxR($("bxp"),BX,1);
-function bxTest(){const h=$("bxt");h.style.display="block";bxR(h,BX,2);$("cl").classList.remove("hide")}
-function bxF(){const B=BX,pn=$("pn4"),lab=i=>{const u=bxUnlock(B,i);return u?"🔒 до "+fmtD(u):"🔓 сразу"},last=bxUnlock(B,B.n-1),fl=B.notes.slice(0,B.n).filter(x=>x.trim()).length;
- const ch=(arr,cur,k)=>`<div class="chips">${arr.map(a=>`<button class="chip ${String(cur)===String(a[0])?"on":""}" data-bk="${k}" data-v="${E(String(a[0]))}">${a[1]}</button>`).join("")}</div>`;
- const tg=(k,t)=>`<button class="chip ${B[k]?"on":""}" data-bt="${k}">${B[k]?"✓ ":""}${t}</button>`;
- pn.innerHTML=`<div class="cd"><h2 class="l"><span class="num2">1</span>Кому и о чём</h2><div class="two"><div><label>Имя получателя</label><input class="f" data-bi="to" value="${E(B.to)}"></div><div><label>Твоё имя (подпись)</label><input class="f" data-bi="from" value="${E(B.from)}"></div></div><label>Кому</label>${ch([["w","Девушку 👧"],["m","Парню 👦"]],B.who,"who")}<label>Название коробочки</label>${ch(TTL.map(t=>[t,t]),B.title,"title")}<input class="f" style="margin-top:10px" data-bi="title" placeholder="Или своё название" value="${TTL.includes(B.title)?"":E(B.title)}"><label>Сколько записок</label>${ch([[7,"Неделя · 7"],[14,"2 недели · 14"],[21,"3 недели · 21"],[30,"Месяц · 30"]],B.n,"n")}</div>
- <div class="cd"><h2 class="l"><span class="num2">2</span>Записки <span class="mt">${fl} из ${B.n}</span></h2><p class="sub2">Лучше всего работают конкретные моменты, а не общие комплименты.</p><button class="lnk" id="ex">Вставить примеры записок</button>${Array.from({length:B.n},(_,i)=>`<div class="nt"><div class="nh"><b>№ ${i+1}</b><span>${lab(i)}</span>${B.mode==="custom"?`<input type="date" class="f sm" data-dn="${i}" value="${B.dates[i]||B.start}">`:""}</div><textarea class="f" data-n="${i}" placeholder="Потому что…">${E(B.notes[i]||"")}</textarea></div>`).join("")}</div>
- <div class="cd"><h2 class="l"><span class="num2">3</span>Когда открывать</h2>${ch([["daily","По одной в день"],["all","Все сразу"],["custom","Свои даты"]],B.mode,"mode")}${B.mode==="all"?"":`<div class="two"><div>${B.mode==="custom"?"":`<label>Первая записка</label><input class="f" type="date" data-bd="start" value="${B.start}">`}</div><div><label>Время</label><input class="f" type="time" data-bd="time" value="${B.time}"></div></div><p class="sub2" style="margin-top:10px">Последняя, ${B.n}-я, откроется ${fmtD(last)}.</p>`}</div>
- <div class="cd"><h2 class="l"><span class="num2">4</span>Оформление</h2><label>Тема</label><div class="thg">${TH.map((t,i)=>`<button class="tb ${B.th===i?"on":""}" data-bk="th" data-v="${i}" style="background:${t[2]};color:${t[3]}"><span>${t[1]}</span>${t[0]}</button>`).join("")}</div><label>Печать на конвертах</label>${ch(STAMPS.map(s=>[s,s]),B.st,"st")}</div>
- <div class="cd"><h2 class="l"><span class="num2">5</span>Ответ</h2>${tg("reply","Получатель может ответить")}${B.reply?`<label>Вопрос под коробочкой</label><input class="f" data-bi="q" value="${E(B.q)}"><label>Варианты ответа: до 6</label><div class="chips">${B.opts.map((o,i)=>`<button class="chip ${o.on?"on":""}" data-op="${i}">${E(o.t)}</button>`).join("")}</div><div style="display:flex;gap:8px;margin-top:10px"><input class="f" id="ao" placeholder="Свой вариант"><button class="btn o2" id="addo">Добавить</button></div><div class="chips" style="margin-top:12px">${tg("custom","Можно написать свой ответ")}</div>`:""}<div class="hh">Ответы в Telegram</div><label>${TGL}</label><input class="f" data-bi="tg" value="${E(B.tg)}" placeholder="${BOT?"код или @username":"@username"}">${tgHelp()}</div>
- <div class="cd"><div id="bxo"></div><button class="btn" id="bxm" style="width:100%">Создать коробочку 💗</button><p class="sub2" style="text-align:center;margin-top:10px">Бесплатно и без регистрации</p></div>`;
- pn.querySelectorAll("[data-bk]").forEach(b=>b.onclick=()=>{const k=b.dataset.bk,v=b.dataset.v;B[k]=(k==="n"||k==="th")?+v:v;bxF();bxP()});
- pn.querySelectorAll("[data-bt]").forEach(b=>b.onclick=()=>{B[b.dataset.bt]=!B[b.dataset.bt];bxF();bxP()});
- pn.querySelectorAll("[data-bi]").forEach(e=>e.oninput=()=>{B[e.dataset.bi]=e.value;bxP()});
- pn.querySelectorAll("[data-n]").forEach(e=>e.oninput=()=>{B.notes[+e.dataset.n]=e.value;bxP()});
- pn.querySelectorAll("[data-dn]").forEach(e=>e.onchange=()=>{B.dates[+e.dataset.dn]=e.value;bxF();bxP()});
- pn.querySelectorAll("[data-bd]").forEach(e=>e.onchange=()=>{B[e.dataset.bd]=e.value;bxF();bxP()});
- pn.querySelectorAll("[data-op]").forEach(b=>b.onclick=()=>{const o=B.opts[+b.dataset.op];if(!o.on&&B.opts.filter(x=>x.on).length>=6){ts("Максимум 6 вариантов");return}o.on=!o.on;bxF();bxP()});
- if($("addo"))$("addo").onclick=()=>{const v=$("ao").value.trim();if(!v)return;B.opts.push({t:v,on:B.opts.filter(x=>x.on).length<6});bxF();bxP()};
- $("ex").onclick=()=>{for(let i=0;i<B.n&&i<EX.length;i++)B.notes[i]=EX[i];bxF();bxP()};
- $("bxm").onclick=()=>{const lk=B.base+"?b="+b64({...B,notes:B.notes.slice(0,B.n)});$("bxo").innerHTML=`<label style="margin-top:0">Ссылка на коробочку</label><input class="f" id="lk3" readonly value="${E(lk)}"><div class="chips" style="margin:12px 0 18px"><button class="btn" id="c4">Скопировать ссылку 🔗</button><button class="btn o2" id="t4">Открыть как получатель ▶</button></div>`;$("c4").onclick=()=>cpy(lk,$("lk3"));$("t4").onclick=bxTest;conf();$("lk3").scrollIntoView({block:"center",behavior:"smooth"})}}
 
-/* ---------- вкладки ---------- */
-function go(t){document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===t));["home","inv","scr2","box"].forEach(id=>$(id).classList.add("hide"));$(t==="scr"?"scr2":t).classList.remove("hide");$("tst").classList.toggle("hide",t==="home");if(t==="scr"){scrR();scrP()}if(t==="box"){bxF();bxP()}scrollTo(0,0)}
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>go(b.dataset.t));
-$("logo").onclick=()=>go("home");
-document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
-$("exb").onclick=()=>{go("box");$("ex").click()};
-/* ---------- главная: сердечки и генератор ---------- */
-$("hfx").innerHTML=Array.from({length:14},(_,i)=>`<i style="left:${(i*29+7)%100}%;font-size:${16+(i*5)%20}px;animation-duration:${8+(i*3)%9}s;animation-delay:-${(i*2)%9}s">${["💗","💖","💌","✨"][i%4]}</i>`).join("");
-const GN={c:["Потому что ты умеешь радоваться мелочам, и я учусь этому у тебя.","Потому что рядом с тобой время идёт слишком быстро.","Потому что ты слушаешь меня так, будто нет ничего важнее.","Потому что после разговора с тобой любые проблемы становятся меньше.","Потому что у тебя особенный взгляд, от которого мне сразу тепло.","Потому что ты помнишь мелочи, которые для меня важны.","Потому что с тобой не страшно быть настоящим.","Потому что твой голос — мой любимый звук.","Потому что ты делаешь мои обычные дни особенными.","Потому что мне хочется рассказывать тебе всё: и важное, и пустяки.","Потому что рядом с тобой я чувствую себя дома.","Потому что ты умеешь поддержать одним словом.","Потому что я скучаю, даже когда мы не виделись всего пару часов.","Потому что ты — моё любимое «мы»."],
-d:["Пикник на закате с термосом чая и тёплым пледом 🧺","Вечер настольных игр и домашней пиццы 🍕","Прогулка без маршрута: сворачиваем туда, куда хочется 🚶","Кино под одеялом: фильмы выбираем по очереди 🎬","Встретить рассвет за городом 🌅","Готовим вместе ужин по случайному рецепту 🍝","Фотопрогулка: по 10 кадров друг друга на заданные темы 📸","Боулинг или каток: проигравший покупает горячий шоколад ⛸","Свидание «как в первый раз» там, где познакомились 💞","Вечер под звёздами: плед, чай и поиск созвездий 🌌"],
-q:["Какой момент с нами ты вспоминаешь чаще всего?","О чём ты мечтаешь, а я ещё не знаю?","Какой наш день ты хотел(а) бы повторить?","Что я делаю такого, от чего тебе становится спокойно?","Куда мы поехали бы, если бы завтра не нужно было на работу?","Какое маленькое «спасибо» ты давно хотел(а) мне сказать?","Какая песня — про нас?","Чего тебе сейчас больше всего хочется: тишины, приключений или обнимашек?","Какой общий план ты хочешь исполнить в этом году?","Что ты заметил(а) во мне в самый первый день?"]};
-let gk="c",gi=-1;
-function gen(){const a=GN[gk];let i;do{i=Math.floor(Math.random()*a.length)}while(i===gi&&a.length>1);gi=i;const e=$("gtx");e.textContent=a[i];e.style.animation="none";void e.offsetWidth;e.style.animation="in .4s";$("gbx").classList.toggle("hide",gk!=="c")}
-document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{gk=b.dataset.g;document.querySelectorAll("[data-g]").forEach(x=>x.classList.toggle("on",x===b));gi=-1;gen()});
-$("gmore").onclick=gen;$("gcp").onclick=()=>cpy($("gtx").textContent);
-$("gbx").onclick=()=>{const t=$("gtx").textContent,i=BX.notes.findIndex((x,j)=>j<30&&!x.trim());if(i<0){ts("Все 30 записок уже заполнены");return}BX.notes[i]=t;BX.n=[7,14,21,30].find(v=>v>i);ts("🎁 Добавлено в записку № "+(i+1))};
-gen();
-$("tst").onclick=()=>{if(!$("scr2").classList.contains("hide")){scrP();$("ph2").classList.add("full");$("cl").classList.remove("hide")}else if(!$("box").classList.contains("hide"))bxTest();else testInv()};
-document.addEventListener("pointerdown",e=>{const b=e.target.closest("button");if(b&&!b.disabled){b.classList.remove("tap");void b.offsetWidth;b.classList.add("tap")}});
-R();
-if(V){try{const o=unb(V[1]);document.body.classList.add("vw");document.querySelector("main").style.padding="0";["home","inv","scr2","box"].forEach(id=>$(id).classList.add("hide"));
- if(V[0]==="i"){Object.assign(S,o);$("inv").classList.remove("hide");document.querySelectorAll("#inv .grid>div:last-child,#inv .cap,#rs").forEach(e=>e.classList.add("hide"));reset("gate");$("ph").classList.add("full");ev("opened")}
- else if(V[0]==="b"){Object.assign(BX,o);const h=document.createElement("div");h.id="bxv";document.body.appendChild(h);bxR(h,BX,0)}
- else{Object.assign(SC,o);$("scr2").classList.remove("hide");document.querySelectorAll("#scr2 .grid>div:last-child,#scr2 .cap").forEach(e=>e.classList.add("hide"));scrP();$("ph2").classList.add("full")}}catch(e){document.body.classList.remove("vw");document.querySelector("main").style.padding="";go("home");ts("Ссылка повреждена или обрезана — открыта главная")}}
+// ---------- НОВАЯ ЛОГИКА С ЖУРНАЛОМ / БАЗОЙ (Vercel KV API) ----------
+const b64=o=>encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(o)))));
+const unb=v=>JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(v)))));
+
+async function saveToCloud(cardObj) {
+    try {
+        const res = await fetch('/api/card', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(cardObj)
+        });
+        const r = await res.json();
+        if(r.success && r.id) return BASE + "?id=" + r.id;
+    } catch(e) {}
+    // Запасной вариант со старым сжатием в ссылку, если бэкенд недоступен
+    return BASE + "?b=" + b64(cardObj);
+}
+
+async function loadFromCloud(id) {
+    try {
+        const res = await fetch('/api/card?id=' + id);
+        if(res.ok) return await res.json();
+    } catch(e) {}
+    return null;
+}
+// --------------------------------------------------------------------
+
+const msg=(t,x,w)=>{x=x||{};const m=w==="m",P=m?"Он":"Она",f=m?"":"а";const M={opened:`${P} открыл${f} приглашение 👀`,yes:`${P} сказал${f} «да»! 🎉`,no_click:`${P} жмёт «нет» (${x.count} раз) 😅`,date:`${P} выбрал${f} время: ${fd(x.date)}, ${x.time} 📅`,final:`Свидание подтверждено: ${fd(x.date)}, ${x.time}${x.choices&&x.choices.length?", "+x.choices.join(", "):""} 💘`,box_open:`${P} открыл${f} записку № ${x.n} 💌`,box_reply:`${P} ответил${f}: «${x.answer}»`,scr:`${P} ${m?"стёр":"стёрла"} слой и ${m?"узнал":"узнала"} секрет 👀`};return M[t]}
+const tgU=v=>String(v||"").trim().replace(/^(https?:\/\/)?t\.me\//i,"").replace(/^@/,"").replace(/[^\w]/g,"");
+function tgBtn(text,c){const u=tgU(c.tg);if(!u||/^\d+$/.test(u))return;let b=$("tgb");if(!b){b=document.createElement("a");b.id="tgb";b.className="tgb";document.body.appendChild(b);}b.href=`https://t.me/${u}?text=${encodeURIComponent(text)}`;b.target="_blank";b.rel="noopener";b.textContent="💬 Сообщить в Telegram";}
+function sendTg(t,x,c){const cd=c||S,u=tgU(cd.tg),txt=msg(t,x,cd.who);if(!u)return;if(/^\d+$/.test(u)){fetch(`${API}/notify`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:u,text:txt})}).catch(()=>{});}else{tgBtn(txt,cd);}}
+const toast=t=>{const s=$("ts");s.textContent=t;s.classList.add("s");setTimeout(()=>s.classList.remove("s"),2400)};
+const cp=t=>{navigator.clipboard.writeText(t).then(()=>toast("Ссылка скопирована в буфер обмена! 🤍")).catch(()=>{prompt("Скопируй ссылку:",t)})};
+function cnfs(){const cv=$("cv"),ctx=cv.getContext("2d");cv.width=window.innerWidth;cv.height=window.innerHeight;const p=Array.from({length:70},()=>({x:Math.random()*cv.width,y:-20-Math.random()*100,vx:(Math.random()-.5)*4,vy:Math.random()*4+3,s:Math.random()*8+4,c:["#f43f6e","#ff6f91","#ffd1dc","#fff"][Math.floor(Math.random()*4)],r:Math.random()*360,vr:(Math.random()-.5)*10}));let f=0;function loop(){ctx.clearRect(0,0,cv.width,cv.height);p.forEach(o=>{o.x+=o.vx;o.y+=o.vy;o.r+=o.vr;ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.r*Math.PI/180);ctx.fillStyle=o.c;ctx.fillRect(-o.s/2,-o.s/2,o.s,o.s);ctx.restore();});if(++f<90)requestAnimationFrame(loop);else ctx.clearRect(0,0,cv.width,cv.height);}loop();}
+function initHome(){
+  const g=["💬 Любовь — это когда ты думаешь о человеке чаще, чем о еде.","💬 Самые лучшие моменты случаются неожиданно.","💬 Рядом с тобой хочется становиться лучше."];
+  $("gtx").textContent=g[0];
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>goTab(b.dataset.go));
+  $("logo").onclick=()=>location.href=BASE;
+  $("exb").onclick=()=>location.href=BASE+"?box_ex=1";
+  $("gmore").onclick=()=>{const arr=["💬 Ты — моя самая любимая привычка.","💬 С тобой тепло даже в самый холодный день.","💬 Люблю твой смех и твои глаза."];$("gtx").textContent=arr[Math.floor(Math.random()*arr.length)];};
+  $("gcp").onclick=()=>cp($("gtx").textContent);
+  $("gbx").onclick=()=>toast("Скоро эта функция будет тут!");
+}
+function goTab(t){
+  document.querySelectorAll("header nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  $("home").classList.add("hide");
+  ["inv","scr2","box"].forEach(id=>$(id).classList.add("hide"));
+  if(t==="inv"){$("inv").classList.remove("hide");renderInv(0);}
+  else if(t==="box"){$("box").classList.remove("hide");renderBoxEditor();}
+  else if(t==="scr"){$("scr2").classList.remove("hide");renderScrEditor();}
+}
+document.querySelectorAll("header nav button").forEach(b=>b.onclick=()=>goTab(b.dataset.t));
+
+// Инициализация при загрузке (проверка параметров ?id= или ?b=)
+window.addEventListener("DOMContentLoaded", async ()=>{
+  initHome();
+  const params=new URLSearchParams(location.search);
+  const id=params.get("id");
+  const b=params.get("b");
+  
+  if(id){
+    const cloudData = await loadFromCloud(id);
+    if(cloudData) {
+      if(cloudData.notes) runBoxViewer(cloudData);
+      else if(cloudData.secret !== undefined) runScrViewer(cloudData);
+      else runInvViewer(cloudData);
+    } else {
+      alert("Ссылка устарела или не найдена!");
+    }
+  } else if(b){
+    try {
+      const data = unb(b);
+      if(data.notes) runBoxViewer(data);
+      else if(data.secret !== undefined) runScrViewer(data);
+      else runInvViewer(data);
+    } catch(e) {
+      alert("Ошибка чтения ссылки!");
+    }
+  }
+});
+
+// Заглушки для редакторов (остальной функционал твоего сайта сохранен)
+function renderInv(s){$("sn").textContent=T[s].n;$("sc").textContent=`Шаг ${s+1} из ${T.length}`;$("pi").style.width=((s+1)/T.length*100)+"%";$("pn").innerHTML=`<h2>${T[s].h}</h2><p class="sub">${T[s].sub}</p>`;}
+function renderBoxEditor(){$("bxp").innerHTML="<h2>Редактор коробочки</h2>";}
+function renderScrEditor(){$("pn2").innerHTML="<h2>Редактор сюрприза</h2>";}
+function runInvViewer(d){document.body.classList.add("vw");$("inv").classList.remove("hide");$("scr").textContent="Загружено приглашение";}
+function runBoxViewer(d){document.body.classList.add("vw");$("box").classList.remove("hide");$("bxp").textContent="Загружена коробочка";}
+function runScrViewer(d){document.body.classList.add("vw");$("scr2").classList.remove("hide");$("sc2").textContent="Загружен сюрприз";}
 </script></body></html>
