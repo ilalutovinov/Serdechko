@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/l/:id", "destination": "/api/share?id=:id" }
+  ],
+  "functions": {
+    "api/share.js": { "includeFiles": "index.html" }
+  }
+}
